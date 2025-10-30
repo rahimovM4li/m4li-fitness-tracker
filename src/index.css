@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Light mode - Dark Green Fitness theme */
+    --background: 0 0% 100%;
+    --foreground: 150 20% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 150 20% 15%;
+    --card-hover: 140 25% 97%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 20% 15%;
+
+    /* Dark emerald green primary */
+    --primary: 158 64% 35%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 158 64% 45%;
+
+    --secondary: 140 25% 94%;
+    --secondary-foreground: 150 20% 15%;
+
+    --muted: 140 25% 94%;
+    --muted-foreground: 150 15% 45%;
+
+    /* Vibrant lime accent */
+    --accent: 88 75% 45%;
+    --accent-foreground: 0 0% 100%;
+    --accent-glow: 88 75% 55%;
+
+    /* Success green for completed workouts */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 140 20% 88%;
+    --input: 140 20% 88%;
+    --ring: 158 64% 35%;
+
+    --radius: 0.75rem;
+
+    /* Custom gradient stops - Green gradients */
+    --gradient-start: 158 64% 35%;
+    --gradient-mid: 142 60% 40%;
+    --gradient-end: 88 75% 45%;
+
+    /* Chart colors - Green theme */
+    --chart-1: 158 64% 35%;
+    --chart-2: 88 75% 45%;
+    --chart-3: 142 76% 36%;
+    --chart-4: 120 60% 50%;
+    --chart-5: 160 70% 45%;
+  }
+
+  .dark {
+    /* Dark mode - Dark Green Fitness theme */
+    --background: 150 25% 8%;
+    --foreground: 140 15% 95%;
+
+    --card: 150 20% 12%;
+    --card-foreground: 140 15% 95%;
+    --card-hover: 150 20% 15%;
+
+    --popover: 150 20% 12%;
+    --popover-foreground: 140 15% 95%;
+
+    --primary: 158 64% 45%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 158 64% 55%;
+
+    --secondary: 150 20% 18%;
+    --secondary-foreground: 140 15% 95%;
+
+    --muted: 150 20% 15%;
+    --muted-foreground: 140 15% 65%;
+
+    --accent: 88 75% 50%;
+    --accent-foreground: 150 25% 8%;
+    --accent-glow: 88 75% 60%;
+
+    --success: 142 76% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 150 20% 20%;
+    --input: 150 20% 18%;
+    --ring: 158 64% 45%;
+
+    --chart-1: 158 64% 45%;
+    --chart-2: 88 75% 50%;
+    --chart-3: 142 76% 45%;
+    --chart-4: 120 60% 55%;
+    --chart-5: 160 70% 50%;
+  }
+}
+
+/* Custom utility classes for the fitness app */
+@layer utilities {
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--gradient-start)), hsl(var(--gradient-mid)), hsl(var(--gradient-end)));
+  }
+
+  .gradient-card {
+    background: linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--muted)) 100%);
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, hsl(var(--primary-glow)), hsl(var(--accent-glow)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .glow-primary {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.5);
+  }
+
+  .glow-accent {
+    box-shadow: 0 0 20px hsl(var(--accent) / 0.5);
+  }
+
+  /* Glassmorphism effects */
+  .glass {
+    background: hsl(var(--card) / 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--border) / 0.3);
+  }
+
+  .glass-strong {
+    background: hsl(var(--card) / 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid hsl(var(--primary) / 0.2);
+    box-shadow: 0 8px 32px 0 hsl(var(--primary) / 0.15);
+  }
+
+  .glass-nav {
+    background: hsl(var(--card) / 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid hsl(var(--border) / 0.5);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
