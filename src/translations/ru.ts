@@ -12,7 +12,7 @@ export const ru = {
 
   // Dashboard
   dashboard: {
-    title: 'FitTrack',
+    title: 'm4li-fit',
     subtitle: 'Отслеживайте свой прогресс, достигайте своих целей',
     totalWorkouts: 'Всего тренировок',
     thisWeek: 'На этой неделе',

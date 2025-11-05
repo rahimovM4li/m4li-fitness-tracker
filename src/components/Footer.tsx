@@ -4,12 +4,12 @@ export function Footer() {
       <p>
         Built by{' '}
         <a
-          href="https://yourportfolio.com"
+          href="https://m4li.de/about"
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary hover:text-primary-glow transition-colors underline"
         >
-          Your Name
+          m4li.de
         </a>
       </p>
     </footer>

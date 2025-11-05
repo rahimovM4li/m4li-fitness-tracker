@@ -11,6 +11,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEffect } from 'react';
+import { LanguageToggle } from '@/components/LanguageToggle';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 /**
  * Dashboard page showing workout overview and quick stats
@@ -57,41 +59,47 @@ export default function Dashboard() {
           <MotivationalQuote />
         </div>
 
+                  <LanguageToggle />
+                    <ThemeToggle />
+
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-          <StatCard
-            title={t.dashboard.totalWorkouts}
-            value={stats.totalWorkouts}
-            icon={Dumbbell}
-            gradient
-          />
-          <StatCard
-            title={t.dashboard.thisWeek}
-            value={stats.thisWeek}
-            icon={Calendar}
-          />
-          <StatCard
-            title={t.dashboard.totalVolume}
-            value={`${(stats.totalVolume / 1000).toFixed(1)}k`}
-            icon={TrendingUp}
-          />
-          <StatCard
-            title={t.dashboard.streak}
-            value={`${streak} ${t.dashboard.days}`}
-            icon={TrendingUp}
-            gradient
-            className="border-2 border-primary"
-          />
-        </div>
+   <div
+  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 animate-fade-in"
+  style={{ animationDelay: '0.1s' }}
+>
+  <StatCard
+    title={t.dashboard.totalWorkouts}
+    value={stats.totalWorkouts}
+    icon={Dumbbell}
+    gradient
+  />
+  <StatCard
+    title={t.dashboard.thisWeek}
+    value={stats.thisWeek}
+    icon={Calendar}
+  />
+  <StatCard
+    title={t.dashboard.totalVolume}
+    value={`${(stats.totalVolume / 1000).toFixed(1)}k`}
+    icon={TrendingUp}
+  />
+  <StatCard
+    title={t.dashboard.streak}
+    value={`${streak} ${t.dashboard.days}`}
+    icon={TrendingUp}
+    gradient
+    className="border-2 border-primary"
+  />
+</div>
 
         {/* Today's Workout */}
         <Card className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+            <CardTitle className="block items-center justify-between  md:space-y-0 md:flex">
               <span>{t.dashboard.todaysWorkout}</span>
               {!todaysWorkout && (
                 <Link to="/workout">
-                  <Button variant="gradient" size="sm">
+                  <Button variant='default' className='mt-5 md:m-0' size="sm">
                     <Plus className="h-4 w-4 mr-2" />
                     {t.dashboard.startWorkout}
                   </Button>
@@ -116,7 +124,7 @@ export default function Dashboard() {
                   ))}
                 </div>
                 <Link to="/workout">
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full mt-3">
                     {t.dashboard.continueWorkout}
                   </Button>
                 </Link>
@@ -144,13 +152,13 @@ export default function Dashboard() {
             <CardTitle>{t.dashboard.exerciseLibrary}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
+            <div className="block items-center justify-between  md:space-y-0 md:flex">
               <div>
                 <p className="text-2xl font-bold">{exercises.length}</p>
-                <p className="text-sm text-muted-foreground">{t.dashboard.exercisesAvailable}</p>
+                <p className="text-sm text-muted-foreground pb-4">{t.dashboard.exercisesAvailable}</p>
               </div>
               <Link to="/exercises">
-                <Button variant="outline">
+                <Button variant="outline" className="w-full md:w-auto">
                   {t.dashboard.manageExercises}
                 </Button>
               </Link>

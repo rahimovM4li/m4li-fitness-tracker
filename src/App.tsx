@@ -4,10 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import { LanguageToggle } from "@/components/LanguageToggle";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { Navigation } from "@/components/Navigation";
-import { Footer } from "@/components/Footer";
 import Dashboard from "./pages/Dashboard";
 import Exercises from "./pages/Exercises";
 import Workout from "./pages/Workout";
@@ -28,8 +25,6 @@ const App = () => (
         <BrowserRouter>
           <Toaster />
           <Sonner position="top-center" />
-          <LanguageToggle />
-          <ThemeToggle />
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/exercises" element={<Exercises />} />
@@ -44,7 +39,6 @@ const App = () => (
           </Routes>
           <InstallPrompt />
           <Navigation />
-          <Footer />
         </BrowserRouter>
       </TooltipProvider>
     </LanguageProvider>

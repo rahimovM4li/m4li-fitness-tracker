@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import { de, ru } from 'date-fns/locale';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
+import { Footer } from '@/components/Footer';
 
 /**
  * Workout History page displaying all past workout sessions
@@ -151,6 +152,7 @@ export default function HistoryPage() {
             </Collapsible>
           );
         })}
+               <Footer />
       </div>
     </div>
   );

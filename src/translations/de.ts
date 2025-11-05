@@ -12,7 +12,7 @@ export const de = {
 
   // Dashboard
   dashboard: {
-    title: 'FitTrack',
+    title: 'm4li-fit',
     subtitle: 'Verfolgen Sie Ihren Fortschritt, erreichen Sie Ihre Ziele',
     totalWorkouts: 'Trainingseinheiten',
     thisWeek: 'Diese Woche',

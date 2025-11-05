@@ -283,15 +283,15 @@ export default function WorkoutPage() {
         {/* Add Exercise / Load Template */}
         <Card className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
           <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
+            <div className="block items-center justify-between md:flex">
               <CardTitle className="text-base md:text-lg">{t.workout.addExerciseTitle}</CardTitle>
               {templates.length > 0 && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-9">
+                    <Button variant="outline" size="sm" className="h-9 items-center  w-full mt-3 md:mt-0 md:w-auto">
                       <Copy className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
                       <span className="hidden sm:inline">{t.templates.loadRoutine}</span>
-                      <span className="sm:hidden">Load</span>
+                      <span className="sm:hidden text-xs">{t.templates.loadRoutine}</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -305,7 +305,7 @@ export default function WorkoutPage() {
               )}
             </div>
           </CardHeader>
-          <CardContent className="flex gap-2 md:gap-3">
+          <CardContent className="block gap-2 md:gap-3 md:flex">
             <Select value={selectedExerciseId} onValueChange={setSelectedExerciseId}>
               <SelectTrigger className="flex-1">
                 <SelectValue placeholder={t.workout.selectExercise} />
@@ -318,10 +318,10 @@ export default function WorkoutPage() {
                 ))}
               </SelectContent>
             </Select>
-            <Button onClick={addExerciseToWorkout} variant="gradient" size="default" className="shrink-0">
+            <Button onClick={addExerciseToWorkout} variant="default" size="default" className="shrink-0 md:w-auto w-full mt-3 md:mt-0">
               <Plus className="h-4 w-4 mr-1 md:mr-2" />
               <span className="hidden sm:inline">{t.exercises.add}</span>
-              <span className="sm:hidden">Add</span>
+              <span className="sm:hidden">{t.exercises.add}</span>
             </Button>
           </CardContent>
         </Card>
@@ -444,7 +444,7 @@ export default function WorkoutPage() {
 
           <TabsContent value="templates" className="space-y-4">
             {/* Templates Header */}
-            <div className="flex items-center justify-between">
+            <div className="block items-center justify-between md:flex animate-fade-in">
               <div>
                 <h2 className="text-xl md:text-2xl font-bold">{t.templates.title}</h2>
                 <p className="text-sm text-muted-foreground">{t.templates.subtitle}</p>
@@ -454,10 +454,10 @@ export default function WorkoutPage() {
                 if (!open) resetTemplateForm();
               }}>
                 <DialogTrigger asChild>
-                  <Button variant="gradient" size="sm" className="h-9">
+                  <Button variant="gradient" size="sm" className="h-9 w-full md:w-auto mt-3 md:mt-0">
                     <Plus className="h-4 w-4 mr-2" />
                     <span className="hidden sm:inline">{t.templates.newTemplate}</span>
-                    <span className="sm:inline md:hidden">New</span>
+                    <span className="sm:inline md:hidden">{t.templates.newTemplate}</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">

@@ -1,96 +1,105 @@
 import { useLocalStorage } from './useLocalStorage';
 import { Achievement } from '@/types/workout';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
-
-const ACHIEVEMENT_DEFINITIONS: Omit<Achievement, 'unlocked' | 'unlockedAt' | 'progress'>[] = [
-  {
-    id: 'first-workout',
-    name: 'First Steps',
-    description: 'Complete your first workout',
-    icon: '🎯',
-    target: 1,
-  },
-  {
-    id: 'week-streak',
-    name: 'Week Warrior',
-    description: 'Train 7 days in a row',
-    icon: '🔥',
-    target: 7,
-  },
-  {
-    id: 'month-streak',
-    name: 'Monthly Master',
-    description: 'Train 30 days in a row',
-    icon: '💪',
-    target: 30,
-  },
-  {
-    id: '10-workouts',
-    name: 'Getting Started',
-    description: 'Complete 10 workouts',
-    icon: '⭐',
-    target: 10,
-  },
-  {
-    id: '50-workouts',
-    name: 'Dedicated',
-    description: 'Complete 50 workouts',
-    icon: '🏆',
-    target: 50,
-  },
-  {
-    id: '100-workouts',
-    name: 'Centurion',
-    description: 'Complete 100 workouts',
-    icon: '👑',
-    target: 100,
-  },
-  {
-    id: '10k-volume',
-    name: 'Iron Mover',
-    description: 'Lift 10,000 kg total',
-    icon: '🏋️',
-    target: 10000,
-  },
-  {
-    id: '50k-volume',
-    name: 'Volume King',
-    description: 'Lift 50,000 kg total',
-    icon: '💎',
-    target: 50000,
-  },
-  {
-    id: '100k-volume',
-    name: 'Mountain Mover',
-    description: 'Lift 100,000 kg total',
-    icon: '⛰️',
-    target: 100000,
-  },
-];
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /**
- * Custom hook for managing achievements
+ * Custom hook for managing achievements (with translations)
  */
 export function useAchievements() {
+  const { t } = useLanguage();
+
+  // Dynamically translated achievement definitions
+  const ACHIEVEMENT_DEFINITIONS: Omit<Achievement, 'unlocked' | 'unlockedAt' | 'progress'>[] = useMemo(() => [
+    {
+      id: 'first-workout',
+      name: t.achievements.achievements.firstSteps,
+      description: t.achievements.achievements.firstStepsDesc,
+      icon: '🎯',
+      target: 1,
+    },
+    {
+      id: 'week-streak',
+      name: t.achievements.achievements.weekWarrior,
+      description: t.achievements.achievements.weekWarriorDesc,
+      icon: '🔥',
+      target: 7,
+    },
+    {
+      id: 'month-streak',
+      name: t.achievements.achievements.monthlyMaster,
+      description: t.achievements.achievements.monthlyMasterDesc,
+      icon: '💪',
+      target: 30,
+    },
+    {
+      id: '10-workouts',
+      name: t.achievements.achievements.gettingStarted,
+      description: t.achievements.achievements.gettingStartedDesc,
+      icon: '⭐',
+      target: 10,
+    },
+    {
+      id: '50-workouts',
+      name: t.achievements.achievements.dedicated,
+      description: t.achievements.achievements.dedicatedDesc,
+      icon: '🏆',
+      target: 50,
+    },
+    {
+      id: '100-workouts',
+      name: t.achievements.achievements.centurion,
+      description: t.achievements.achievements.centurionDesc,
+      icon: '👑',
+      target: 100,
+    },
+    {
+      id: '10k-volume',
+      name: t.achievements.achievements.ironMover,
+      description: t.achievements.achievements.ironMoverDesc,
+      icon: '🏋️',
+      target: 10000,
+    },
+    {
+      id: '50k-volume',
+      name: t.achievements.achievements.volumeKing,
+      description: t.achievements.achievements.volumeKingDesc,
+      icon: '💎',
+      target: 50000,
+    },
+    {
+      id: '100k-volume',
+      name: t.achievements.achievements.mountainMover,
+      description: t.achievements.achievements.mountainMoverDesc,
+      icon: '⛰️',
+      target: 100000,
+    },
+  ], [t]);
+
+  // Local storage state
   const [achievements, setAchievements] = useLocalStorage<Achievement[]>(
     'achievements',
-    ACHIEVEMENT_DEFINITIONS.map(def => ({ ...def, unlocked: false, progress: 0 }))
+    ACHIEVEMENT_DEFINITIONS.map(def => ({
+      ...def,
+      unlocked: false,
+      progress: 0,
+    }))
   );
 
+  // Update achievements when stats change
   const checkAchievements = useCallback((stats: {
     totalWorkouts: number;
     totalVolume: number;
     currentStreak: number;
   }) => {
     setAchievements(prevAchievements => {
-      const updatedAchievements = prevAchievements.map(achievement => {
+      const updated = prevAchievements.map(achievement => {
         if (achievement.unlocked) return achievement;
 
         let progress = 0;
         let shouldUnlock = false;
 
-        // Check based on achievement type
         if (achievement.id.includes('workout')) {
           progress = stats.totalWorkouts;
           shouldUnlock = stats.totalWorkouts >= (achievement.target || 0);
@@ -103,8 +112,7 @@ export function useAchievements() {
         }
 
         if (shouldUnlock) {
-          // Show toast notification for newly unlocked achievement
-          toast.success(`🎉 Achievement Unlocked: ${achievement.name}!`, {
+          toast.success(t.achievements.achievementUnlocked.replace('{name}', achievement.name), {
             description: achievement.description,
             duration: 5000,
           });
@@ -120,16 +128,16 @@ export function useAchievements() {
         return { ...achievement, progress };
       });
 
-      // Only update if something actually changed
-      const hasChanges = updatedAchievements.some((ach, idx) => 
-        ach.progress !== prevAchievements[idx].progress || 
-        ach.unlocked !== prevAchievements[idx].unlocked
+      const changed = updated.some((a, i) =>
+        a.unlocked !== prevAchievements[i].unlocked ||
+        a.progress !== prevAchievements[i].progress
       );
 
-      return hasChanges ? updatedAchievements : prevAchievements;
+      return changed ? updated : prevAchievements;
     });
-  }, [setAchievements]);
+  }, [setAchievements, t]);
 
+  // Helpers
   const getUnlockedCount = () => achievements.filter(a => a.unlocked).length;
 
   const getProgressPercentage = (achievement: Achievement) => {

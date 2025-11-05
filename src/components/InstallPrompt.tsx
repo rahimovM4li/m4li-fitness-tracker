@@ -61,13 +61,13 @@ export function InstallPrompt() {
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="space-y-1">
-              <CardTitle className="text-lg">Install M4li-fit</CardTitle>
+              <CardTitle className="text-lg">Install m4li-fit</CardTitle>
               <CardDescription className="text-sm">
                 Install the app for offline access and a better experience
               </CardDescription>
             </div>
             <Button
-              variant="ghost"
+              variant="gradient"
               size="icon"
               className="h-8 w-8 -mt-1 -mr-1"
               onClick={handleDismiss}
