@@ -58,7 +58,7 @@ export function ExerciseCard({ exercise, onEdit, onDelete, isDragging }: Exercis
         <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button
             size="icon"
-            variant="gradient"
+            variant="ghost"
             onClick={() => onEdit(exercise)}
             className="h-8 w-8"
           >
@@ -66,7 +66,7 @@ export function ExerciseCard({ exercise, onEdit, onDelete, isDragging }: Exercis
           </Button>
           <Button
             size="icon"
-            variant="gradient"
+            variant="ghost"
             onClick={() => onDelete(exercise.id)}
             className="h-8 w-8 text-destructive hover:text-destructive"
           >

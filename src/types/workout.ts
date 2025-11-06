@@ -4,6 +4,10 @@ export interface Exercise {
   id: string;
   name: string;
   category: string; // e.g., "Chest", "Back", "Legs"
+  targetMuscles?: string[]; // e.g., ["Pectorals", "Triceps"]
+  description?: string; // How to perform the exercise
+  image?: string; // URL or path to exercise image
+  difficulty?: 'beginner' | 'intermediate' | 'advanced';
   createdAt: string;
 }
 
@@ -63,6 +67,16 @@ export interface Achievement {
   unlockedAt?: string;
   progress?: number;
   target?: number;
+}
+
+export interface PersonalRecord {
+  id: string;
+  exerciseId: string;
+  exerciseName: string;
+  type: 'maxWeight' | 'maxVolume' | 'maxReps';
+  value: number;
+  date: string;
+  workoutId: string;
 }
 
 export interface WeeklyReport {

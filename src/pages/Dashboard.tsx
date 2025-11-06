@@ -13,6 +13,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useEffect } from 'react';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { professionalExercises } from '@/data/exerciseLibrary';
 
 /**
  * Dashboard page showing workout overview and quick stats
@@ -21,8 +22,20 @@ export default function Dashboard() {
   const { workouts, exercises, getStats, getWorkoutStreak } = useWorkouts();
   const { checkAchievements } = useAchievements();
   const { getCurrentWeekReport, generateWeeklyReport } = useWeeklyReports();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
+
+  // Helper to get translated exercise name
+  const getTranslatedExerciseName = (exerciseName: string) => {
+    const exercise = professionalExercises.find(ex => 
+      ex.name === exerciseName || 
+      t.exerciseLibrary[exerciseName as keyof typeof t.exerciseLibrary] === exerciseName
+    );
+    if (exercise) {
+      return t.exerciseLibrary[exercise.name as keyof typeof t.exerciseLibrary] || exercise.name;
+    }
+    return exerciseName;
+  };
   
   const stats = getStats();
   const streak = getWorkoutStreak();
@@ -67,30 +80,30 @@ export default function Dashboard() {
   className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 animate-fade-in"
   style={{ animationDelay: '0.1s' }}
 >
-  <StatCard
-    title={t.dashboard.totalWorkouts}
-    value={stats.totalWorkouts}
-    icon={Dumbbell}
-    gradient
-  />
-  <StatCard
-    title={t.dashboard.thisWeek}
-    value={stats.thisWeek}
-    icon={Calendar}
-  />
-  <StatCard
-    title={t.dashboard.totalVolume}
-    value={`${(stats.totalVolume / 1000).toFixed(1)}k`}
-    icon={TrendingUp}
-  />
-  <StatCard
-    title={t.dashboard.streak}
-    value={`${streak} ${t.dashboard.days}`}
-    icon={TrendingUp}
-    gradient
-    className="border-2 border-primary"
-  />
-</div>
+          <StatCard
+            title={t.dashboard.totalWorkouts}
+            value={stats.totalWorkouts}
+            icon={Dumbbell}
+            gradient
+          />
+          <StatCard
+            title={t.dashboard.thisWeek}
+            value={stats.thisWeek}
+            icon={Calendar}
+          />
+          <StatCard
+            title={t.dashboard.totalVolume}
+            value={`${(stats.totalVolume / 1000).toFixed(1)}k`}
+            icon={TrendingUp}
+          />
+          <StatCard
+            title={t.dashboard.streak}
+            value={`${streak} ${t.dashboard.days}`}
+            icon={TrendingUp}
+            gradient
+            className="border-2 border-primary"
+          />
+        </div>
 
         {/* Today's Workout */}
         <Card className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
@@ -116,7 +129,7 @@ export default function Dashboard() {
                 <div className="space-y-2">
                   {todaysWorkout.exercises.map((exercise) => (
                     <div key={exercise.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
-                      <span className="font-medium">{exercise.exerciseName}</span>
+                      <span className="font-medium">{getTranslatedExerciseName(exercise.exerciseName)}</span>
                       <span className="text-sm text-muted-foreground">
                         {exercise.sets.filter(s => s.completed).length} {t.dashboard.sets}
                       </span>

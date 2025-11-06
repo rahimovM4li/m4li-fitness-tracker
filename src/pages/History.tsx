@@ -5,9 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, Calendar, Dumbbell, Weight } from 'lucide-react';
 import { format } from 'date-fns';
-import { de, ru } from 'date-fns/locale';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
+import { professionalExercises } from '@/data/exerciseLibrary';
 import { Footer } from '@/components/Footer';
 
 /**
@@ -15,10 +15,20 @@ import { Footer } from '@/components/Footer';
  */
 export default function HistoryPage() {
   const { workouts } = useWorkouts();
-  const { t, language } = useLanguage();
+  const { t, locale } = useLanguage();
   const [expandedWorkouts, setExpandedWorkouts] = useState<Set<string>>(new Set());
 
-  const locale = language === 'de' ? de : ru;
+  // Helper to get translated exercise name
+  const getTranslatedExerciseName = (exerciseName: string) => {
+    const exercise = professionalExercises.find(ex => 
+      ex.name === exerciseName || 
+      t.exerciseLibrary[exerciseName as keyof typeof t.exerciseLibrary] === exerciseName
+    );
+    if (exercise) {
+      return t.exerciseLibrary[exercise.name as keyof typeof t.exerciseLibrary] || exercise.name;
+    }
+    return exerciseName;
+  };
 
   // Sort workouts by date (newest first)
   const sortedWorkouts = [...workouts].sort(
@@ -111,13 +121,14 @@ export default function HistoryPage() {
                     <div className="space-y-4">
                       {workout.exercises.map((exercise) => {
                         const completedSets = exercise.sets.filter(s => s.completed);
+                        const translatedName = getTranslatedExerciseName(exercise.exerciseName);
                         
                         return (
                           <div key={exercise.id} className="border-l-2 border-primary/30 pl-4">
                             <div className="flex items-start gap-2 mb-2">
                               <Dumbbell className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
                               <div className="flex-1">
-                                <h4 className="font-semibold text-base">{exercise.exerciseName}</h4>
+                                <h4 className="font-semibold text-base">{translatedName}</h4>
                                 <p className="text-xs text-muted-foreground">
                                   {completedSets.length} {t.history.completedSets}
                                 </p>
