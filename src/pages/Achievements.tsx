@@ -10,7 +10,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
  */
 export default function Achievements() {
   const { achievements, getUnlockedCount, getProgressPercentage } = useAchievements();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   const unlockedAchievements = achievements.filter(a => a.unlocked);
   const lockedAchievements = achievements.filter(a => !a.unlocked);
@@ -59,7 +59,7 @@ export default function Achievements() {
                           <h3 className="text-lg font-bold text-gradient">{achievement.name}</h3>
                           {achievement.unlockedAt && (
                             <span className="text-xs text-muted-foreground shrink-0">
-                              {format(new Date(achievement.unlockedAt), 'MMM d, yyyy')}
+                              {format(new Date(achievement.unlockedAt), 'MMM d, yyyy', { locale })}
                             </span>
                           )}
                         </div>

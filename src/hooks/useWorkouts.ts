@@ -1,27 +1,44 @@
 import { useLocalStorage } from './useLocalStorage';
-import { Workout, Exercise, ExerciseProgress } from '@/types/workout';
+import { Workout, Exercise, ExerciseProgress, PersonalRecord } from '@/types/workout';
 import { format } from 'date-fns';
+import { professionalExercises } from '@/data/exerciseLibrary';
+import { toast } from 'sonner';
 
 /**
  * Custom hook for managing workouts in localStorage
  */
 export function useWorkouts() {
   const [workouts, setWorkouts] = useLocalStorage<Workout[]>('workouts', []);
-  const [exercises, setExercises] = useLocalStorage<Exercise[]>('exercises', [
-    // Default exercises - names will be displayed based on current language
-    { id: '1', name: 'Bankdrücken', category: 'Brust', createdAt: new Date().toISOString() },
-    { id: '2', name: 'Kniebeugen', category: 'Beine', createdAt: new Date().toISOString() },
-    { id: '3', name: 'Kreuzheben', category: 'Rücken', createdAt: new Date().toISOString() },
-    { id: '4', name: 'Schulterdrücken', category: 'Schultern', createdAt: new Date().toISOString() },
-    { id: '5', name: 'Klimmzüge', category: 'Rücken', createdAt: new Date().toISOString() },
-  ]);
+  const [personalRecords, setPersonalRecords] = useLocalStorage<PersonalRecord[]>('personalRecords', []);
+  
+  // Initialize with professional exercise library
+  const getDefaultExercises = (): Exercise[] => {
+    return professionalExercises.map((ex, index) => ({
+      ...ex,
+      id: (index + 1).toString(),
+      createdAt: new Date().toISOString(),
+    }));
+  };
+  
+  const [exercises, setExercises] = useLocalStorage<Exercise[]>('exercises', getDefaultExercises());
 
   // Add a new exercise
-  const addExercise = (name: string, category: string) => {
+  const addExercise = (
+    name: string, 
+    category: string, 
+    targetMuscles?: string[], 
+    description?: string, 
+    difficulty?: 'beginner' | 'intermediate' | 'advanced',
+    image?: string
+  ) => {
     const newExercise: Exercise = {
       id: Date.now().toString(),
       name,
       category,
+      targetMuscles,
+      description,
+      difficulty,
+      image,
       createdAt: new Date().toISOString(),
     };
     setExercises([...exercises, newExercise]);
@@ -29,9 +46,17 @@ export function useWorkouts() {
   };
 
   // Update an exercise
-  const updateExercise = (id: string, name: string, category: string) => {
+  const updateExercise = (
+    id: string, 
+    name: string, 
+    category: string,
+    targetMuscles?: string[], 
+    description?: string, 
+    difficulty?: 'beginner' | 'intermediate' | 'advanced',
+    image?: string
+  ) => {
     setExercises(exercises.map(ex => 
-      ex.id === id ? { ...ex, name, category } : ex
+      ex.id === id ? { ...ex, name, category, targetMuscles, description, difficulty, image } : ex
     ));
   };
 
@@ -45,14 +70,97 @@ export function useWorkouts() {
     setExercises(newOrder);
   };
 
+  // Check and record personal records
+  const checkPersonalRecords = (workout: Workout) => {
+    const newPRs: PersonalRecord[] = [];
+    
+    workout.exercises.forEach(exercise => {
+      const completedSets = exercise.sets.filter(s => s.completed);
+      if (completedSets.length === 0) return;
+
+      const maxWeight = Math.max(...completedSets.map(s => s.weight));
+      const totalVolume = completedSets.reduce((sum, set) => sum + (set.reps * set.weight), 0);
+      const maxReps = Math.max(...completedSets.map(s => s.reps));
+
+      // Get previous PRs for this exercise
+      const prevMaxWeight = personalRecords
+        .filter(pr => pr.exerciseId === exercise.exerciseId && pr.type === 'maxWeight')
+        .sort((a, b) => b.value - a.value)[0];
+      
+      const prevMaxVolume = personalRecords
+        .filter(pr => pr.exerciseId === exercise.exerciseId && pr.type === 'maxVolume')
+        .sort((a, b) => b.value - a.value)[0];
+
+      const prevMaxReps = personalRecords
+        .filter(pr => pr.exerciseId === exercise.exerciseId && pr.type === 'maxReps')
+        .sort((a, b) => b.value - a.value)[0];
+
+      // Check for new max weight PR
+      if (!prevMaxWeight || maxWeight > prevMaxWeight.value) {
+        newPRs.push({
+          id: `${workout.id}-${exercise.exerciseId}-weight`,
+          exerciseId: exercise.exerciseId,
+          exerciseName: exercise.exerciseName,
+          type: 'maxWeight',
+          value: maxWeight,
+          date: workout.date,
+          workoutId: workout.id,
+        });
+      }
+
+      // Check for new volume PR
+      if (!prevMaxVolume || totalVolume > prevMaxVolume.value) {
+        newPRs.push({
+          id: `${workout.id}-${exercise.exerciseId}-volume`,
+          exerciseId: exercise.exerciseId,
+          exerciseName: exercise.exerciseName,
+          type: 'maxVolume',
+          value: totalVolume,
+          date: workout.date,
+          workoutId: workout.id,
+        });
+      }
+
+      // Check for new max reps PR
+      if (!prevMaxReps || maxReps > prevMaxReps.value) {
+        newPRs.push({
+          id: `${workout.id}-${exercise.exerciseId}-reps`,
+          exerciseId: exercise.exerciseId,
+          exerciseName: exercise.exerciseName,
+          type: 'maxReps',
+          value: maxReps,
+          date: workout.date,
+          workoutId: workout.id,
+        });
+      }
+    });
+
+    if (newPRs.length > 0) {
+      setPersonalRecords([...personalRecords, ...newPRs]);
+      
+      // Show toast for each new PR
+      newPRs.forEach(pr => {
+        const prType = pr.type === 'maxWeight' ? 'Weight' : pr.type === 'maxVolume' ? 'Volume' : 'Reps';
+        toast.success(`🎉 New ${prType} PR!`, {
+          description: `${pr.exerciseName}: ${pr.value.toFixed(1)} ${pr.type === 'maxReps' ? 'reps' : 'kg'}`,
+          duration: 5000,
+        });
+      });
+    }
+
+    return newPRs.length;
+  };
+
   // Add a new workout
   const addWorkout = (workout: Workout) => {
     setWorkouts([...workouts, workout]);
+    checkPersonalRecords(workout);
   };
 
   // Update a workout
   const updateWorkout = (id: string, workout: Workout) => {
     setWorkouts(workouts.map(w => w.id === id ? workout : w));
+    checkPersonalRecords(workout);
   };
 
   // Delete a workout
@@ -154,9 +262,24 @@ export function useWorkouts() {
     return streak;
   };
 
+  // Get personal records for an exercise
+  const getPersonalRecords = (exerciseId: string) => {
+    return personalRecords
+      .filter(pr => pr.exerciseId === exerciseId)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  };
+
+  // Get current PR for exercise and type
+  const getCurrentPR = (exerciseId: string, type: PersonalRecord['type']) => {
+    return personalRecords
+      .filter(pr => pr.exerciseId === exerciseId && pr.type === type)
+      .sort((a, b) => b.value - a.value)[0];
+  };
+
   return {
     workouts,
     exercises,
+    personalRecords,
     addExercise,
     updateExercise,
     deleteExercise,
@@ -168,5 +291,7 @@ export function useWorkouts() {
     getExerciseProgress,
     getStats,
     getWorkoutStreak,
+    getPersonalRecords,
+    getCurrentPR,
   };
 }

@@ -15,7 +15,7 @@ interface WeeklyReportCardProps {
  * Card displaying weekly workout summary
  */
 export function WeeklyReportCard({ report, onViewHistory }: WeeklyReportCardProps) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   
   return (
     <Card className="animate-fade-in border-primary/20">
@@ -25,7 +25,7 @@ export function WeeklyReportCard({ report, onViewHistory }: WeeklyReportCardProp
           {t.weeklyReport.title}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          {format(new Date(report.weekStart), 'MMM d')} - {format(new Date(report.weekEnd), 'MMM d, yyyy')}
+          {format(new Date(report.weekStart), 'MMM d', { locale })} - {format(new Date(report.weekEnd), 'MMM d, yyyy', { locale })}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">

@@ -61,13 +61,13 @@ export function InstallPrompt() {
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="space-y-1">
-              <CardTitle className="text-lg">Install m4li-fit</CardTitle>
+              <CardTitle className="text-lg">{t.pwa.installTitle}</CardTitle>
               <CardDescription className="text-sm">
-                Install the app for offline access and a better experience
+                {t.pwa.installDescription}
               </CardDescription>
             </div>
             <Button
-              variant="gradient"
+              variant="ghost"
               size="icon"
               className="h-8 w-8 -mt-1 -mr-1"
               onClick={handleDismiss}
@@ -83,7 +83,7 @@ export function InstallPrompt() {
             variant="gradient"
           >
             <Download className="h-4 w-4 mr-2" />
-            Install App
+            {t.pwa.installButton}
           </Button>
         </CardContent>
       </Card>

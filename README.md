@@ -1,73 +1,128 @@
-# React + TypeScript + Vite
+m4li-fit – Personal Fitness Tracker Web App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+m4li-fit is a modern, fully responsive fitness tracker web application that helps you track workouts, monitor progress, and stay motivated — all in one place. It’s designed for both desktop and mobile, works offline, and stores all data locally in your browser.
 
-Currently, two official plugins are available:
+🌟 Features
+✅ Core Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Workout Tracking – Log exercises, sets, reps, and weights with ease.
 
-## React Compiler
+Workout History – View all past workout sessions by date, including full details of exercises completed.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Workout Templates / Routine Builder – Create custom routines (e.g., Push, Pull, Leg Day) and load them with a single click.
 
-## Expanding the ESLint configuration
+Weekly Workout Planner – Assign routines to specific days and see a clear weekly calendar of planned workouts.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Achievements / Badges – Unlock badges for milestones like consecutive training days or total volume lifted.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Motivational Quotes / Daily Tips – Rotate daily tips on the dashboard for extra motivation.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Personalized Weekly Reports – Get automated summaries of your weekly performance including total volume, PRs, and workouts completed.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+🏋️ Exercise Library
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Professional Exercises – 40+ exercises with categories, target muscles, difficulty level, and instructions.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Visuals – Each exercise comes with a photo or icon for easy identification.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Multilingual Support – English, German, and Russian translations for all exercise names, descriptions, and UI elements.
+
+Category Filters – Quickly filter exercises by muscle group or multiple categories.
+
+📱 Mobile & UI
+
+Fully responsive and touch-friendly design.
+
+Compact input fields for sets, reps, and weights.
+
+Dark / Light Mode toggle with smooth transitions.
+
+Theme customization with dark green colors, gradients, and glassmorphism effects.
+
+Language toggle accessible on mobile.
+
+⏱ Timer & Rest Features
+
+Rest Timer – Auto-starts after completing a set with adjustable durations (30–120s).
+
+Sound and vibration alerts for breaks.
+
+💾 Offline & PWA
+
+Fully installable Progressive Web App (PWA).
+
+Offline functionality and caching, all data stored in localStorage.
+
+Seamless installation from browser on mobile or desktop.
+
+⚙️ Tech Stack
+
+Frontend: React + TypeScript
+
+Styling: Tailwind CSS + Glassmorphism effects
+
+Animations: Framer Motion
+
+Storage: LocalStorage (no backend required)
+
+PWA: Service Worker, Manifest, Offline support
+
+📝 Usage
+
+Open the app in your browser (desktop or mobile).
+
+Set your preferred language and theme.
+
+Add exercises from the Exercise Library to your daily workout.
+
+Track sets, reps, and weights.
+
+Check your History or Weekly Reports to monitor progress.
+
+Unlock achievements as you hit milestones.
+
+🌐 Multilingual Support
+
+All text, exercises, and achievements are available in:
+
+English
+
+German
+
+Russian
+
+Language preference is saved locally and applied across all pages.
+
+📂 Data Storage
+
+All user data (workouts, templates, achievements, settings) is stored in localStorage.
+
+No backend or server required.
+
+Data persists between sessions and works offline.
+
+🎨 Design Highlights
+
+Modern, clean, and responsive UI.
+
+Dark green theme with gradient accents and glassmorphism.
+
+Smooth animations and transitions for a native-app feel.
+
+Mobile-first interactions for easy one-handed usage.
+
+🛠 Future Improvements
+
+Option to add custom exercise images.
+
+Enhanced statistics and charting per muscle group.
+
+Social sharing or syncing across devices (future upgrade).
+
+📌 Notes
+
+Fully offline and PWA-ready.
+
+Compatible with modern browsers on desktop and mobile.
+
+All features optimized for mobile UX, including exercise selection, filters, and inputs.

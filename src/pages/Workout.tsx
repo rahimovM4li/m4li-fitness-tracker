@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useWorkouts } from '@/hooks/useWorkouts';
 import { useTemplates } from '@/hooks/useTemplates';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Trash2, Check, Copy, Save, Edit } from 'lucide-react';
+import { Plus, Trash2, Check, Copy, Save, Edit, Info } from 'lucide-react';
 import { WorkoutExercise, WorkoutSet, Workout, TemplateExercise } from '@/types/workout';
 import {
   DropdownMenu,
@@ -34,6 +34,8 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { RestTimer } from '@/components/RestTimer';
+import { ExerciseDetailDrawer } from '@/components/ExerciseDetailDrawer';
+import { professionalExercises } from '@/data/exerciseLibrary';
 
 /**
  * Workout tracking page for logging today's exercises
@@ -49,6 +51,10 @@ export default function WorkoutPage() {
   );
   const [selectedExerciseId, setSelectedExerciseId] = useState<string>('');
   const [showRestTimer, setShowRestTimer] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [detailExercise, setDetailExercise] = useState<any>(null);
+  const [isDetailDrawerOpen, setIsDetailDrawerOpen] = useState(false);
   
   // Template management state
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
@@ -63,6 +69,48 @@ export default function WorkoutPage() {
       setWorkoutExercises(todaysWorkout.exercises);
     }
   }, [todaysWorkout]);
+
+  // Filter exercises based on selected categories and search
+  const filteredExercises = useMemo(() => {
+    return exercises.filter(exercise => {
+      const matchesCategory = selectedCategories.length === 0 || 
+        selectedCategories.includes(exercise.category);
+      const matchesSearch = searchQuery === '' || 
+        exercise.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        exercise.category.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [exercises, selectedCategories, searchQuery]);
+
+  // Get unique categories
+  const categories = useMemo(() => {
+    const uniqueCategories = Array.from(new Set(exercises.map(ex => ex.category)));
+    return uniqueCategories.sort();
+  }, [exercises]);
+
+  const toggleCategory = (category: string) => {
+    setSelectedCategories(prev => 
+      prev.includes(category) 
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
+  };
+
+  // Helper to get translated exercise name
+  const getTranslatedExerciseName = (exerciseId: string) => {
+    const exercise = exercises.find(ex => ex.id === exerciseId);
+    if (!exercise) return '';
+    return (t.exerciseLibrary as any)?.[exercise.name] || exercise.name;
+  };
+
+  // Helper to open exercise detail
+  const openExerciseDetail = (exerciseId: string) => {
+    const exercise = exercises.find(ex => ex.id === exerciseId);
+    if (exercise) {
+      setDetailExercise(exercise);
+      setIsDetailDrawerOpen(true);
+    }
+  };
 
   const addExerciseToWorkout = () => {
     if (!selectedExerciseId) {
@@ -84,7 +132,7 @@ export default function WorkoutPage() {
       ],
     };
 
-    setWorkoutExercises([...workoutExercises, newWorkoutExercise]);
+    setWorkoutExercises([newWorkoutExercise, ...workoutExercises]);
     setSelectedExerciseId('');
     toast.success(t.common.exerciseAdded.replace('{exercise}', exercise.name));
   };
@@ -283,12 +331,12 @@ export default function WorkoutPage() {
         {/* Add Exercise / Load Template */}
         <Card className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
           <CardHeader className="pb-3">
-            <div className="block items-center justify-between md:flex">
+            <div className="flex items-center justify-between">
               <CardTitle className="text-base md:text-lg">{t.workout.addExerciseTitle}</CardTitle>
               {templates.length > 0 && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-9 items-center  w-full mt-3 md:mt-0 md:w-auto">
+                    <Button variant="outline" size="sm" className="h-9">
                       <Copy className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
                       <span className="hidden sm:inline">{t.templates.loadRoutine}</span>
                       <span className="sm:hidden text-xs">{t.templates.loadRoutine}</span>
@@ -305,24 +353,64 @@ export default function WorkoutPage() {
               )}
             </div>
           </CardHeader>
-          <CardContent className="block gap-2 md:gap-3 md:flex">
-            <Select value={selectedExerciseId} onValueChange={setSelectedExerciseId}>
-              <SelectTrigger className="flex-1">
-                <SelectValue placeholder={t.workout.selectExercise} />
-              </SelectTrigger>
-              <SelectContent>
-                {exercises.map(exercise => (
-                  <SelectItem key={exercise.id} value={exercise.id}>
-                    {exercise.name} ({exercise.category})
-                  </SelectItem>
+          <CardContent className="space-y-3">
+            {/* Category Filter */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground">{t.exercises.filterByDifficulty.replace('Difficulty', 'Category')}</p>
+              <div className="flex flex-wrap gap-2">
+                {categories.map(category => (
+                  <Button
+                    key={category}
+                    variant={selectedCategories.includes(category) ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => toggleCategory(category)}
+                    className="h-8 text-xs"
+                  >
+                    {t.exercises.categories[category.toLowerCase() as keyof typeof t.exercises.categories] || category}
+                  </Button>
                 ))}
-              </SelectContent>
-            </Select>
-            <Button onClick={addExerciseToWorkout} variant="default" size="default" className="shrink-0 md:w-auto w-full mt-3 md:mt-0">
-              <Plus className="h-4 w-4 mr-1 md:mr-2" />
-              <span className="hidden sm:inline">{t.exercises.add}</span>
+                {selectedCategories.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedCategories([])}
+                    className="h-8 text-xs"
+                  >
+                    {t.exercises.allCategories}
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Exercise Selection */}
+            <div className="flex gap-2 md:gap-3">
+              <Select value={selectedExerciseId} onValueChange={setSelectedExerciseId}>
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder={t.workout.selectExercise} />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  {filteredExercises.map(exercise => {
+                    const translatedName = (t.exerciseLibrary as any)?.[exercise.name] || exercise.name;
+                    const translatedCategory = t.exercises.categories[exercise.category.toLowerCase() as keyof typeof t.exercises.categories] || exercise.category;
+                    return (
+                      <SelectItem key={exercise.id} value={exercise.id}>
+                        {translatedName} ({translatedCategory})
+                      </SelectItem>
+                    );
+                  })}
+                  {filteredExercises.length === 0 && (
+                    <div className="p-4 text-center text-sm text-muted-foreground">
+                      {t.exercises.noExercises}
+                    </div>
+                  )}
+                </SelectContent>
+              </Select>
+              <Button onClick={addExerciseToWorkout} variant="gradient" size="default" className="shrink-0">
+                <Plus className="h-4 w-4 mr-1 md:mr-2" />
+                <span className="hidden sm:inline">{t.exercises.add}</span>
               <span className="sm:hidden">{t.exercises.add}</span>
-            </Button>
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
@@ -339,7 +427,17 @@ export default function WorkoutPage() {
             workoutExercises.map((exercise) => (
               <Card key={exercise.id}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 md:pb-4">
-                  <CardTitle className="text-lg md:text-xl">{exercise.exerciseName}</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-lg md:text-xl">{getTranslatedExerciseName(exercise.exerciseId)}</CardTitle>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => openExerciseDetail(exercise.exerciseId)}
+                      className="h-8 w-8 md:h-9 md:w-9 hover:bg-accent"
+                    >
+                      <Info className="h-4 w-4" />
+                    </Button>
+                  </div>
                   <Button
                     size="icon"
                     variant="ghost"
@@ -444,7 +542,7 @@ export default function WorkoutPage() {
 
           <TabsContent value="templates" className="space-y-4">
             {/* Templates Header */}
-            <div className="block items-center justify-between md:flex animate-fade-in">
+            <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl md:text-2xl font-bold">{t.templates.title}</h2>
                 <p className="text-sm text-muted-foreground">{t.templates.subtitle}</p>
@@ -454,7 +552,7 @@ export default function WorkoutPage() {
                 if (!open) resetTemplateForm();
               }}>
                 <DialogTrigger asChild>
-                  <Button variant="gradient" size="sm" className="h-9 w-full md:w-auto mt-3 md:mt-0">
+                  <Button variant="gradient" size="sm" className="h-9">
                     <Plus className="h-4 w-4 mr-2" />
                     <span className="hidden sm:inline">{t.templates.newTemplate}</span>
                     <span className="sm:inline md:hidden">{t.templates.newTemplate}</span>
@@ -501,11 +599,14 @@ export default function WorkoutPage() {
                             <SelectValue placeholder={t.workout.selectExercise} />
                           </SelectTrigger>
                           <SelectContent>
-                            {exercises.map(exercise => (
-                              <SelectItem key={exercise.id} value={exercise.id}>
-                                {exercise.name}
-                              </SelectItem>
-                            ))}
+                            {exercises.map(exercise => {
+                              const translatedName = (t.exerciseLibrary as any)?.[exercise.name] || exercise.name;
+                              return (
+                                <SelectItem key={exercise.id} value={exercise.id}>
+                                  {translatedName}
+                                </SelectItem>
+                              );
+                            })}
                           </SelectContent>
                         </Select>
                         <Button onClick={addExerciseToTemplate} variant="outline" size="icon" className="shrink-0 h-11 w-11 md:h-10 md:w-10 touch-manipulation">
@@ -518,21 +619,23 @@ export default function WorkoutPage() {
                     {templateExercises.length > 0 && (
                       <div className="space-y-3">
                         <label className="text-sm font-medium">{t.templates.exercisesInTemplate}</label>
-                        {templateExercises.map((exercise) => (
-                          <Card key={exercise.exerciseId}>
-                            <CardContent className="p-4">
-                              <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                  <span className="font-medium">{exercise.exerciseName}</span>
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    onClick={() => removeExerciseFromTemplate(exercise.exerciseId)}
-                                    className="text-destructive h-8 w-8"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
+                        {templateExercises.map((exercise) => {
+                          const translatedName = (t.exerciseLibrary as any)?.[exercise.exerciseName] || exercise.exerciseName;
+                          return (
+                            <Card key={exercise.exerciseId}>
+                              <CardContent className="p-4">
+                                <div className="space-y-3">
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-medium">{translatedName}</span>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      onClick={() => removeExerciseFromTemplate(exercise.exerciseId)}
+                                      className="text-destructive h-8 w-8"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
                                 <div className="grid grid-cols-3 gap-2">
                                    <div className="space-y-1">
                                     <label className="text-xs text-muted-foreground">{t.common.sets}</label>
@@ -586,11 +689,12 @@ export default function WorkoutPage() {
                                       inputMode="decimal"
                                     />
                                   </div>
-                                </div>
+                                 </div>
                               </div>
                             </CardContent>
                           </Card>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
 
@@ -674,6 +778,13 @@ export default function WorkoutPage() {
 
       {/* Rest Timer */}
       {showRestTimer && <RestTimer onClose={() => setShowRestTimer(false)} />}
+
+      {/* Exercise Detail Drawer */}
+      <ExerciseDetailDrawer
+        exercise={detailExercise}
+        isOpen={isDetailDrawerOpen}
+        onClose={() => setIsDetailDrawerOpen(false)}
+      />
     </main>
   );
 }

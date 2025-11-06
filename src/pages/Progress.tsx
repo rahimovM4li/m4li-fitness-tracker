@@ -13,21 +13,28 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress as ProgressBar } from '@/components/ui/progress';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { format } from 'date-fns';
-import { TrendingUp, Trophy, Lock } from 'lucide-react';
+import { TrendingUp, Trophy, Lock, Award } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Badge } from '@/components/ui/badge';
 
 /**
  * Progress page showing strength gains over time with charts
  */
 export default function Progress() {
-  const { exercises, getExerciseProgress } = useWorkouts();
+  const { exercises, getExerciseProgress, getPersonalRecords, getCurrentPR } = useWorkouts();
   const { achievements, getUnlockedCount, getProgressPercentage } = useAchievements();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [selectedExerciseId, setSelectedExerciseId] = useState<string>(exercises[0]?.id || '');
 
   const progressData = selectedExerciseId ? getExerciseProgress(selectedExerciseId) : [];
+  const personalRecords = selectedExerciseId ? getPersonalRecords(selectedExerciseId) : [];
   const unlockedAchievements = achievements.filter(a => a.unlocked);
   const lockedAchievements = achievements.filter(a => !a.unlocked);
+  
+  // Get current PRs
+  const currentMaxWeight = selectedExerciseId ? getCurrentPR(selectedExerciseId, 'maxWeight') : null;
+  const currentMaxVolume = selectedExerciseId ? getCurrentPR(selectedExerciseId, 'maxVolume') : null;
+  const currentMaxReps = selectedExerciseId ? getCurrentPR(selectedExerciseId, 'maxReps') : null;
 
   // Format data for recharts
   const chartData = progressData.map(p => ({
@@ -37,6 +44,7 @@ export default function Progress() {
   }));
 
   const selectedExercise = exercises.find(ex => ex.id === selectedExerciseId);
+  const translatedExerciseName = selectedExercise ? ((t.exerciseLibrary as any)?.[selectedExercise.name] || selectedExercise.name) : t.common.thisExercise;
 
   return (
     <main className="min-h-screen pb-20 px-3 pt-4 md:px-4 md:pt-6">
@@ -64,11 +72,14 @@ export default function Progress() {
                   <SelectValue placeholder={t.progress.chooseExercise} />
                 </SelectTrigger>
                 <SelectContent>
-                  {exercises.map(exercise => (
-                    <SelectItem key={exercise.id} value={exercise.id}>
-                      {exercise.name}
-                    </SelectItem>
-                  ))}
+                  {exercises.map(exercise => {
+                    const translatedName = (t.exerciseLibrary as any)?.[exercise.name] || exercise.name;
+                    return (
+                      <SelectItem key={exercise.id} value={exercise.id}>
+                        {translatedName}
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
@@ -84,7 +95,7 @@ export default function Progress() {
               </div>
               <p className="text-muted-foreground">{t.progress.noData}</p>
               <p className="text-sm text-muted-foreground">
-                {t.progress.completeWorkouts.replace('{exercise}', selectedExercise?.name || t.common.thisExercise)}
+                {t.progress.completeWorkouts.replace('{exercise}', translatedExerciseName)}
               </p>
             </CardContent>
           </Card>
@@ -190,6 +201,95 @@ export default function Progress() {
                     {Math.max(...progressData.map(p => p.totalVolume), 0)} {t.progress.lbs}
                   </p>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Personal Records */}
+            <Card className="animate-fade-in" style={{ animationDelay: '0.5s' }}>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Award className="h-5 w-5 text-primary" />
+                  <CardTitle>{t.progress.personalRecords}</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {personalRecords.length === 0 ? (
+                  <div className="text-center py-8 space-y-2">
+                    <Award className="h-12 w-12 text-muted-foreground mx-auto" />
+                    <p className="text-muted-foreground">{t.progress.noPRs}</p>
+                    <p className="text-sm text-muted-foreground">{t.progress.setPRs}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Current PRs */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
+                        <p className="text-sm font-medium text-muted-foreground mb-1">{t.progress.maxWeight}</p>
+                        <p className="text-2xl font-bold text-primary">
+                          {currentMaxWeight?.value.toFixed(1) || 0} kg
+                        </p>
+                        {currentMaxWeight && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {format(new Date(currentMaxWeight.date), 'MMM d, yyyy', { locale })}
+                          </p>
+                        )}
+                      </div>
+                      <div className="p-4 rounded-lg bg-accent/10 border border-accent/20">
+                        <p className="text-sm font-medium text-muted-foreground mb-1">{t.progress.maxVolume}</p>
+                        <p className="text-2xl font-bold text-accent">
+                          {currentMaxVolume?.value.toFixed(0) || 0} kg
+                        </p>
+                        {currentMaxVolume && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {format(new Date(currentMaxVolume.date), 'MMM d, yyyy', { locale })}
+                          </p>
+                        )}
+                      </div>
+                      <div className="p-4 rounded-lg bg-secondary/10 border border-secondary/20">
+                        <p className="text-sm font-medium text-muted-foreground mb-1">{t.progress.maxReps}</p>
+                        <p className="text-2xl font-bold">
+                          {currentMaxReps?.value || 0}
+                        </p>
+                        {currentMaxReps && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {format(new Date(currentMaxReps.date), 'MMM d, yyyy', { locale })}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* PR History */}
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium">{t.progress.prHistory}</h3>
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {personalRecords.slice(0, 20).map((pr) => (
+                          <div key={pr.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <Badge variant={
+                                pr.type === 'maxWeight' ? 'default' : 
+                                pr.type === 'maxVolume' ? 'secondary' : 
+                                'outline'
+                              }>
+                                {pr.type === 'maxWeight' ? t.progress.maxWeight :
+                                 pr.type === 'maxVolume' ? t.progress.maxVolume :
+                                 t.progress.maxReps}
+                              </Badge>
+                              <div>
+                                <p className="font-medium text-sm">
+                                  {pr.value.toFixed(pr.type === 'maxReps' ? 0 : 1)} {pr.type === 'maxReps' ? 'reps' : 'kg'}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {format(new Date(pr.date), 'MMM d, yyyy', { locale })}
+                                </p>
+                              </div>
+                            </div>
+                            <Award className="h-4 w-4 text-primary" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </>

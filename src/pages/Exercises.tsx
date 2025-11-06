@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useWorkouts } from '@/hooks/useWorkouts';
-import { ExerciseCard } from '@/components/ExerciseCard';
+import { ExerciseCardEnhanced } from '@/components/ExerciseCardEnhanced';
+import { ExerciseDetailDrawer } from '@/components/ExerciseDetailDrawer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
@@ -28,17 +30,26 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 /**
  * Exercises page for managing the exercise library
- * Features: Add, edit, delete, search, and drag-to-reorder exercises
+ * Features: Add, edit, delete, search, filter, and drag-to-reorder exercises
  */
 export default function Exercises() {
   const { exercises, addExercise, updateExercise, deleteExercise, reorderExercises } = useWorkouts();
   const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [filterDifficulty, setFilterDifficulty] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
+  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+  const [isDetailDrawerOpen, setIsDetailDrawerOpen] = useState(false);
+  
+  // Form state
   const [formName, setFormName] = useState('');
   const [formCategory, setFormCategory] = useState('');
+  const [formDifficulty, setFormDifficulty] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner');
+  const [formTargetMuscles, setFormTargetMuscles] = useState('');
+  const [formDescription, setFormDescription] = useState('');
+  const [formImage, setFormImage] = useState('');
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -47,6 +58,33 @@ export default function Exercises() {
       },
     })
   );
+
+  // Category mapping object
+  const CATEGORY_MAP = {
+    'Chest': 'chest',
+    'Brust': 'chest',
+    'Грудь': 'chest',
+    'Back': 'back',
+    'Rücken': 'back',
+    'Спина': 'back',
+    'Legs': 'legs',
+    'Beine': 'legs',
+    'Ноги': 'legs',
+    'Shoulders': 'shoulders',
+    'Schultern': 'shoulders',
+    'Плечи': 'shoulders',
+    'Arms': 'arms',
+    'Arme': 'arms',
+    'Руки': 'arms',
+    'Core': 'core',
+    'Rumpf': 'core',
+    'Корпус': 'core',
+    'Cardio': 'cardio',
+    'Кардио': 'cardio',
+    'Other': 'other',
+    'Sonstiges': 'other',
+    'Другое': 'other',
+  };
 
   const CATEGORIES = [
     t.exercises.categories.chest,
@@ -59,11 +97,35 @@ export default function Exercises() {
     t.exercises.categories.other,
   ];
 
-  // Filter exercises based on search and category
+  const DIFFICULTIES = [
+    { value: 'beginner', label: t.exercises.difficulties.beginner },
+    { value: 'intermediate', label: t.exercises.difficulties.intermediate },
+    { value: 'advanced', label: t.exercises.difficulties.advanced },
+  ];
+
+  // Helper function to get category key from translated value
+  const getCategoryKey = (translatedCategory: string): string => {
+    return CATEGORY_MAP[translatedCategory as keyof typeof CATEGORY_MAP] || translatedCategory.toLowerCase();
+  };
+
+  // Helper function to get difficulty key from translated value
+  const getDifficultyKey = (translatedDifficulty: string): string => {
+    const diffEntry = DIFFICULTIES.find(d => d.label === translatedDifficulty);
+    return diffEntry ? diffEntry.value : translatedDifficulty.toLowerCase();
+  };
+
+  // Filter exercises based on search, category, and difficulty
   const filteredExercises = exercises.filter(exercise => {
     const matchesSearch = exercise.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = filterCategory === 'all' || exercise.category === filterCategory;
-    return matchesSearch && matchesCategory;
+    
+    // Convert selected filter to internal key for comparison
+    const selectedCategoryKey = filterCategory === 'all' ? 'all' : getCategoryKey(filterCategory);
+    const matchesCategory = filterCategory === 'all' || exercise.category.toLowerCase() === selectedCategoryKey;
+    
+    const selectedDifficultyKey = filterDifficulty === 'all' ? 'all' : getDifficultyKey(filterDifficulty);
+    const matchesDifficulty = filterDifficulty === 'all' || exercise.difficulty === selectedDifficultyKey;
+    
+    return matchesSearch && matchesCategory && matchesDifficulty;
   });
 
   const handleOpenDialog = (exercise?: Exercise) => {
@@ -71,10 +133,18 @@ export default function Exercises() {
       setEditingExercise(exercise);
       setFormName(exercise.name);
       setFormCategory(exercise.category);
+      setFormDifficulty(exercise.difficulty || 'beginner');
+      setFormTargetMuscles(exercise.targetMuscles?.join(', ') || '');
+      setFormDescription(exercise.description || '');
+      setFormImage(exercise.image || '');
     } else {
       setEditingExercise(null);
       setFormName('');
       setFormCategory('');
+      setFormDifficulty('beginner');
+      setFormTargetMuscles('');
+      setFormDescription('');
+      setFormImage('');
     }
     setIsDialogOpen(true);
   };
@@ -84,6 +154,10 @@ export default function Exercises() {
     setEditingExercise(null);
     setFormName('');
     setFormCategory('');
+    setFormDifficulty('beginner');
+    setFormTargetMuscles('');
+    setFormDescription('');
+    setFormImage('');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -94,11 +168,34 @@ export default function Exercises() {
       return;
     }
 
+    const targetMusclesArray = formTargetMuscles
+      .split(',')
+      .map(m => m.trim())
+      .filter(m => m.length > 0);
+
+    // Convert translated category back to English key for storage
+    const categoryKey = getCategoryKey(formCategory);
+
     if (editingExercise) {
-      updateExercise(editingExercise.id, formName.trim(), formCategory);
+      updateExercise(
+        editingExercise.id,
+        formName.trim(),
+        categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1), // Capitalize first letter
+        targetMusclesArray.length > 0 ? targetMusclesArray : undefined,
+        formDescription.trim() || undefined,
+        formDifficulty,
+        formImage.trim() || undefined
+      );
       toast.success(t.common.exerciseUpdated);
     } else {
-      addExercise(formName.trim(), formCategory);
+      addExercise(
+        formName.trim(),
+        categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1), // Capitalize first letter
+        targetMusclesArray.length > 0 ? targetMusclesArray : undefined,
+        formDescription.trim() || undefined,
+        formDifficulty,
+        formImage.trim() || undefined
+      );
       toast.success(t.common.exerciseAdded.replace('{exercise}', formName.trim()));
     }
 
@@ -116,11 +213,21 @@ export default function Exercises() {
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      const oldIndex = exercises.findIndex(ex => ex.id === active.id);
-      const newIndex = exercises.findIndex(ex => ex.id === over.id);
-      const newOrder = arrayMove(exercises, oldIndex, newIndex);
+      const oldIndex = filteredExercises.findIndex(ex => ex.id === active.id);
+      const newIndex = filteredExercises.findIndex(ex => ex.id === over.id);
+      
+      // Get the full exercises array indices
+      const fullOldIndex = exercises.findIndex(ex => ex.id === active.id);
+      const fullNewIndex = exercises.findIndex(ex => ex.id === over.id);
+      
+      const newOrder = arrayMove(exercises, fullOldIndex, fullNewIndex);
       reorderExercises(newOrder);
     }
+  };
+
+  const handleViewDetails = (exercise: Exercise) => {
+    setSelectedExercise(exercise);
+    setIsDetailDrawerOpen(true);
   };
 
   return (
@@ -139,7 +246,7 @@ export default function Exercises() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+        <div className="flex flex-col gap-3 animate-fade-in" style={{ animationDelay: '0.1s' }}>
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
@@ -149,17 +256,30 @@ export default function Exercises() {
               className="pl-10 h-11 md:h-10 touch-manipulation"
             />
           </div>
-          <Select value={filterCategory} onValueChange={setFilterCategory}>
-            <SelectTrigger className="w-full sm:w-[180px] h-11 md:h-10 touch-manipulation">
-              <SelectValue placeholder={t.exercises.selectCategory} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t.exercises.allCategories}</SelectItem>
-              {CATEGORIES.map(cat => (
-                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="grid grid-cols-2 gap-3">
+            <Select value={filterCategory} onValueChange={setFilterCategory}>
+              <SelectTrigger className="h-11 md:h-10 touch-manipulation">
+                <SelectValue placeholder={t.exercises.selectCategory} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t.exercises.allCategories}</SelectItem>
+                {CATEGORIES.map(cat => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={filterDifficulty} onValueChange={setFilterDifficulty}>
+              <SelectTrigger className="h-11 md:h-10 touch-manipulation">
+                <SelectValue placeholder={t.exercises.filterByDifficulty} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t.exercises.allDifficulties}</SelectItem>
+                {DIFFICULTIES.map(diff => (
+                  <SelectItem key={diff.value} value={diff.label}>{diff.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Exercise List */}
@@ -183,11 +303,12 @@ export default function Exercises() {
                 strategy={verticalListSortingStrategy}
               >
                 {filteredExercises.map((exercise) => (
-                  <ExerciseCard
+                  <ExerciseCardEnhanced
                     key={exercise.id}
                     exercise={exercise}
                     onEdit={handleOpenDialog}
                     onDelete={handleDelete}
+                    onViewDetails={handleViewDetails}
                   />
                 ))}
               </SortableContext>
@@ -198,7 +319,7 @@ export default function Exercises() {
 
       {/* Add/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingExercise ? t.exercises.editExercise : t.exercises.addNewExercise}
@@ -233,6 +354,50 @@ export default function Exercises() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="difficulty">{t.exercises.difficulty}</Label>
+                <Select value={formDifficulty} onValueChange={(val) => setFormDifficulty(val as any)}>
+                  <SelectTrigger id="difficulty" className="h-11 md:h-10 touch-manipulation">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DIFFICULTIES.map(diff => (
+                      <SelectItem key={diff.value} value={diff.value}>{diff.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="targetMuscles">{t.exercises.targetMuscles}</Label>
+                <Input
+                  id="targetMuscles"
+                  placeholder="e.g. Pectorals, Triceps (comma separated)"
+                  value={formTargetMuscles}
+                  onChange={(e) => setFormTargetMuscles(e.target.value)}
+                  className="h-11 md:h-10 touch-manipulation"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">{t.exercises.description}</Label>
+                <Textarea
+                  id="description"
+                  placeholder={t.exercises.howToPerform}
+                  value={formDescription}
+                  onChange={(e) => setFormDescription(e.target.value)}
+                  className="min-h-20 resize-none touch-manipulation"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="image">Emoji/Icon</Label>
+                <Input
+                  id="image"
+                  placeholder="e.g. 💪, 🏋️, 🦵"
+                  value={formImage}
+                  onChange={(e) => setFormImage(e.target.value)}
+                  className="h-11 md:h-10 touch-manipulation"
+                  maxLength={2}
+                />
+              </div>
             </div>
             <DialogFooter className="gap-2 sm:gap-0">
               <Button type="button" variant="outline" onClick={handleCloseDialog} className="h-11 md:h-10 touch-manipulation">
@@ -245,6 +410,13 @@ export default function Exercises() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Exercise Detail Drawer */}
+      <ExerciseDetailDrawer
+        exercise={selectedExercise}
+        isOpen={isDetailDrawerOpen}
+        onClose={() => setIsDetailDrawerOpen(false)}
+      />
     </main>
   );
 }

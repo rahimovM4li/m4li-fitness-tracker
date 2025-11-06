@@ -4,6 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Sparkles } from 'lucide-react';
 import { useMemo } from 'react';
 import { format } from 'date-fns';
+import { ca, de } from 'date-fns/locale';
 
 interface QuoteState {
   date: string; // nur Datum merken
@@ -52,6 +53,23 @@ export function MotivationalQuote() {
         'Постоянство превращает среднее в выдающееся',
         'Не будь экстремальным — будь последовательным',
       ],
+      en: [
+  "No excuses today 💪",
+  "Progress, not perfection",
+  "Every rep counts",
+  "Your only limit is you",
+  "Make it happen",
+  "Train insane or remain the same",
+  "Success starts with self-discipline",
+  "Push harder than yesterday",
+  "The pain you feel today will be the strength you feel tomorrow",
+  "Don't wish for it, work for it",
+  "Strive for progress, not perfection",
+  "Your body can stand almost anything. It's your mind you have to convince",
+  "The only bad workout is the one that didn't happen",
+  "Consistency is what transforms average into excellence",
+  "You don't have to be extreme, just consistent",
+      ],
     }),
     []
   );
@@ -75,8 +93,17 @@ export function MotivationalQuote() {
     if (quoteState.date !== today) {
       setQuoteState({ date: today });
     }
+    switch (language) {
+      case 'de':
+        return QUOTES.de[dayOfYear];
+      case 'ru':
+        return QUOTES.ru[dayOfYear];
+      case 'en':
+        return QUOTES.en[dayOfYear];
+        default:
+          return QUOTES.en[dayOfYear];
+    }   
 
-    return language === 'ru' ? QUOTES.ru[dayOfYear] : QUOTES.de[dayOfYear];
   }, [language, quoteState.date, QUOTES, setQuoteState]);
 
   return (
