@@ -178,6 +178,25 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
+
+                {/* Install CTA */}
+        <Card className="gradient-primary p-1 animate-fade-in" style={{ animationDelay: '0.5s' }}>
+          <div className="bg-background rounded-lg p-6 md:p-8 text-center space-y-4">
+            <div className="space-y-2">
+              <h2 className="text-2xl md:text-3xl font-bold text-gradient">
+                {t.cta_install_title}
+              </h2>
+              <p className="text-muted-foreground">
+                {t.cta_install_subtitle}
+              </p>
+            </div>
+            <Link to="/install">
+              <Button variant="gradient" size="lg" className="w-full md:w-auto">
+                {t.how_to_install}
+              </Button>
+            </Link>
+          </div>
+        </Card>
       </div>
     </main>
   );

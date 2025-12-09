@@ -60,7 +60,7 @@ export const ru = {
     exerciseDetails: 'Детали упражнения',
     howToPerform: 'Как выполнять',
     musclesWorked: 'Задействованные мышцы',
-    filterByDifficulty: 'Фильтр по сложности',
+    filterByDifficulty: 'Фильтр по мышцевой группе',
     allDifficulties: 'Все уровни',
     categories: {
       chest: 'Грудь',
@@ -245,6 +245,12 @@ export const ru = {
     androidChrome: 'Android Chrome: Меню → Установить приложение',
     desktopChrome: 'Desktop Chrome: Адресная строка → Значок установки',
   },
+
+    // CTA Install
+  cta_install_title: 'Установите m4li-fit на своё устройство',
+  cta_install_subtitle: 'Получите быстрый доступ, офлайн-режим и опыт как в приложении.',
+  install_button: 'Установить сейчас',
+  how_to_install: 'Как установить?',
 
   // Exercise Library - Names and Descriptions
   exerciseLibrary: {

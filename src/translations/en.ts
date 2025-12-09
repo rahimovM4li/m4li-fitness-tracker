@@ -60,7 +60,7 @@ export const en = {
     exerciseDetails: 'Exercise Details',
     howToPerform: 'How to Perform',
     musclesWorked: 'Muscles Worked',
-    filterByDifficulty: 'Filter by Difficulty',
+    filterByDifficulty: 'Filter by muscle group',
     allDifficulties: 'All Difficulties',
     categories: {
       chest: 'Chest',
@@ -245,6 +245,13 @@ export const en = {
     androidChrome: 'Android Chrome: Menu → Install app',
     desktopChrome: 'Desktop Chrome: Address bar → Install icon',
   },
+
+    // CTA Install
+  cta_install_title: 'Install m4li-fit on your device',
+  cta_install_subtitle: 'Get faster access, offline mode, and a native-app experience.',
+  install_button: 'Install Now',
+  how_to_install: 'How to install?',
+
 
   // Exercise Library - Names and Descriptions
   exerciseLibrary: {

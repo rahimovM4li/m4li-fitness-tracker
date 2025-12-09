@@ -23,6 +23,8 @@ const App = () => (
     <LanguageProvider>
       <TooltipProvider>
         <BrowserRouter>
+          <div className="flex flex-col min-h-screen">
+            <div className="flex-1 pb-16 md:pb-0">
           <Toaster />
           <Sonner position="top-center" />
           <Routes>
@@ -38,7 +40,9 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           <InstallPrompt />
+          </div>
           <Navigation />
+          </div>
         </BrowserRouter>
       </TooltipProvider>
     </LanguageProvider>
